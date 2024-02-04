@@ -1,0 +1,33 @@
+{
+  "name": "url_shortener",
+  "version": "1.0.0",
+  "description": "shortens the provided url.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "ankit",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.5",
+    "bcrpyt": "^2.0.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
+    "ejs-lint": "^2.0.0",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongo": "^0.1.0",
+    "mongoose": "^8.0.3",
+    "multer": "^1.4.5-lts.1",
+    "nodemon": "^3.0.2",
+    "short-unique-id": "^5.0.3",
+    "swagger-autogen": "^2.23.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
+  }
+}
