@@ -1,17 +1,16 @@
 const userModel = require("../models/user_model");
 const urlModel = require("../models/url_model")
 const bcrypt = require("bcryptjs");
-const { request } = require("express");
 const jwt = require("jsonwebtoken");
 
 exports.user_login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
+    const { email, password, ip_address } = req.body;
+    // Check if the user exists in the database
     const existingUser = await userModel.findOne({ email });
 
     if (!existingUser) {
-      return res.json({ message: "Student not found" });
+      return res.json({ message: "User not found" });
     }
 
     const isPasswordValid = bcrypt.compare(password, existingUser.password);
@@ -43,6 +42,20 @@ exports.user_login = async (req, res) => {
     if (!authKeyInsertion) {
       return res.json({ message: "Token updation failed" });
     }
+    
+    const ip_address_user = await urlModel.find({ ip_address: ip_address });
+    // Update the user field for each matching document
+    const updatePromises = ip_address_user.map(async (document) => {
+      document.user = existingUser._id;
+      return document.save();
+    });
+    
+    // Wait for all updates to complete
+    const updatedDocuments = await Promise.all(updatePromises);
+
+    if (!updatedDocuments) {
+      return res.json({ message: "User updation failed" });
+    }
 
     return {
       message: "User logged in successfully",
@@ -70,6 +83,7 @@ exports.user_register = async (req, res) => {
         success: false,
       });
     }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     // If not, create a new user and save it to the database
     const newUser = await userModel.create({
@@ -79,7 +93,6 @@ exports.user_register = async (req, res) => {
       gender,
       password: hashedPassword,
     });
-
 
     if (newUser) {
       return {

@@ -5,8 +5,9 @@ const userModel = require("../src/models/user_model");
 // Middleware for handling auth
 async function user_auth(req, res, next) {
   // Implement user auth logic
+  const token = req.cookies.token;
+  const ip_address = req.body.ip_address;
   try {
-    const token = req.cookies.token;
     // const token = req.headers["token"];
     // console.log(token);
     // const tokenHead = req.headers['token'];
@@ -21,12 +22,12 @@ async function user_auth(req, res, next) {
       .exec();
     // if (!user) return res.status(403).json({ msg: "User not found" });
     req.user = user;
+    req.ip_address = ip_address;
     next();
   } catch (err) {
-    res.status(500).json({
-      error: "Invalid token",
-      message: err.message,
-    });
+    req.user = null;
+    req.ip_address = ip_address;
+    next();
   }
 }
 
