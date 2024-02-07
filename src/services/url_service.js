@@ -31,7 +31,9 @@ const fetchQR = async (url) => {
   try {
     const sanitizedUrl = url.replace(/[^a-zA-Z0-9]/g, "_");
     const response = await axios.get(
-      `http://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&node-id=0-1&mode=design&t=ejv8AWMVvpixAJaz-0&size=280x280&format=png&charset-source=UTF-8`,
+      `http://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
+        url
+      )}&node-id=0-1&mode=design&t=ejv8AWMVvpixAJaz-0&size=280x280&format=png&charset-source=UTF-8`,
       {
         responseType: "arraybuffer",
       }
@@ -69,57 +71,100 @@ function extractDomain(url) {
 }
 
 exports.url_shorten = async (req, res) => {
+  const redirectURL = req.body.redirectURL;
+  const ip_address = req.ip_address;
+  const user = req.user;
+
   try {
-    const redirectURL = req.body.redirectURL;
+    const uid = new ShortUniqueId({ length: 8 });
+    const shortURL = uid.rnd();
+
+    // If RedirectURL already exists.
+    let existingURL;
+    if (user != null) {
+      existingURL = await urlModel.findOne({ redirectURL, user: user._id });
+    } else {
+      existingURL = await urlModel.findOne({
+        redirectURL,
+        ip_address,
+        user: null,
+      });
+    }
+
     if (!redirectURL) {
       return res.status(400).json({ error: "URL is required" });
     }
 
     const domain = extractDomain(redirectURL);
-    if (domain) {
-      console.log(`The domain is: ${domain}`);
-    } else {
-      console.log("Failed to extract domain.");
+    if (!domain) {
+      return res
+        .status(400)
+        .json({ error: "Failed to extract domain from URL" });
     }
 
-
     const url_logo = await fetchLogo(domain); // Wait for the logo to be fetched
+    if (!url_logo) {
+      return res.status(400).json({ error: "Failed to fetch logo for URL" });
+    }
+    const url_qr = await fetchQR(`${redirectURL}`);
+    if (!url_qr) {
+      return res.status(400).json({ error: "Failed to fetch QR for URL" });
+    }
 
-    
-    const uid = new ShortUniqueId({ length: 8 });
-    const shortURL = uid.rnd();
-    
-    const url_qr = await fetchQR(`http://localhost:10000/${shortURL}`);
-    
-
-    const user = req.user;
-    let userId = null;
+    let userId;
     if (user) {
       userId = user._id;
     }
+    if (existingURL) {
+      // Update the existing document
+      existingURL.shortURL = shortURL;
+      existingURL.url_logo = url_logo;
+      existingURL.url_qr = url_qr;
 
-    let urlEntry = await urlModel.create({
-      user: userId,
-      shortURL: shortURL,
-      redirectURL: redirectURL,
-      url_logo,
-      url_qr,
-      visitHistory: [],
-    });
+      // Save the updated document
+      const updatedURL = await existingURL.save();
 
-    if (urlEntry) {
-      return {
-        success: true,
-        shortURL: `http://localhost:10000/${shortURL}`,
+      if (updatedURL) {
+        return {
+          success: true,
+          shortURL: `http://localhost:10000/${shortURL}`,
+          url_logo,
+          url_qr,
+          message: "URL Entry Updated!",
+        };
+      } else {
+        return {
+          success: false,
+          message: "Failed to update the URL entry!",
+        };
+      }
+    } else {
+      // Create a new URL entry
+      let userId = user ? user._id : null;
+      const newURL = await urlModel.create({
+        user: userId,
+        ip_address,
+        shortURL,
+        redirectURL,
         url_logo,
         url_qr,
-        message: "URL entry updated!",
-      };
-    } else {
-      return {
-        success: false,
-        message: "Failed to update the URL entry!",
-      };
+        visitHistory: [],
+      });
+
+      if (newURL) {
+        return {
+          success: true,
+          shortURL: `http://localhost:10000/${shortURL}`,
+          url_logo,
+          url_qr,
+          message: "URL Entry Created!",
+        };
+      } else {
+        return {
+          success: false,
+          message: "Failed to create the URL entry!",
+        };
+      }
     }
   } catch (error) {
     console.log(error);
@@ -159,17 +204,40 @@ exports.url_redirection = async (req, res) => {
 };
 
 exports.show_urls = async (req, res) => {
+  const user = req.user;
+  const ip_address = req.body.ip_address;
+  // const ip_address = req.ip_address;
   try {
-    const user = req.user;
-    let userId = null;
+    let userId;
     if (user) {
       userId = user._id;
+      const urls = await urlModel.find({ user: userId });
+      if (urls.length === 0) {
+        return {
+          success: false,
+          message: "No URL entries found",
+        };
+      } else {
+        return {
+          success: true,
+          urls,
+        };
+      }
+    } else {
+      const urls = await urlModel.find({ ip_address });
+
+      if (urls.length === 0) {
+        return {
+          success: false,
+          message: "No URL entries found",
+        };
+      } else {
+        return {
+          success: true,
+          urls,
+        };
+      }
     }
-    const urls = await urlModel.find({ user: userId });
-    return {
-      success: true,
-      urls,
-    };
   } catch (error) {
     console.log(error);
     return res.status(500).send("Internal Server Error");
