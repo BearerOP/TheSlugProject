@@ -5,6 +5,7 @@ let path = require("path");
 const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger_output.json");
+var cookieParser = require('cookie-parser')
 
 dotenv.config();
 const app = express();
@@ -13,7 +14,7 @@ app.use(express.json());
 app.use(cookiparser());
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
@@ -28,7 +29,9 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // Define a route for the root URL ("/")
 app.use("/", require("./src/routes/url_routes"));
 app.use("/", require("./src/routes/user_validation_routes.js"));
+app.use("/", require("./src/routes/google_validation_routes.js"));
 app.use("/", require("./src/routes/insta_routes.js"));
+app.use("/", require("./src/routes/user_profile_routes.js"));
 
 app.use("/public", express.static("public"));
 

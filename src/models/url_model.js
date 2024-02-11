@@ -6,10 +6,6 @@ const urlSchema = new mongoose.Schema(
       default: null,
       ref: "user",
     },
-    ip_address:{
-      type: String,
-      default: null,
-    },
     url_logo:{
       type: String,
       default: "",

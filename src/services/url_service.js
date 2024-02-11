@@ -3,26 +3,30 @@ const ShortUniqueId = require("short-unique-id");
 const axios = require("axios");
 const fs = require("fs").promises; // Using promises version of fs
 const path = require("path");
+const { AsyncLocalStorage } = require("async_hooks");
 
 const fetchLogo = async (domain) => {
   try {
     const response = await axios.get(
-      `https://logo.clearbit.com/${domain}?format=png`,
+      `https://icon.horse/icon/${domain}`,
       {
         responseType: "arraybuffer",
       }
     );
 
-    const folderPath = path.join(__dirname, "../../public/assets/url_logos");
-    const fileName = `${domain}_logo.png`;
-    const filePath = path.join(folderPath, fileName);
+    if (response) {
+      const folderPath = path.join(__dirname, "../../public/assets/url_logos");
+      const fileName = `${domain}_logo.png`;
+      const filePath = path.join(folderPath, fileName);
 
-    await fs.writeFile(filePath, Buffer.from(response.data));
+      await fs.writeFile(filePath, Buffer.from(response.data));
+      // console.log(`Logo saved successfully at: ${filePath}`);
+      return fileName;
+    }
 
-    console.log(`Logo saved successfully at: ${filePath}`);
-    return fileName;
+    return "slug_logo.png";
   } catch (error) {
-    console.error("Error fetching or saving logo:", error.message);
+    // console.error("Error fetching or saving logo:", error.message);
     // Handle errors
     throw error; // Rethrow the error to handle it elsewhere
   }
@@ -38,22 +42,21 @@ const fetchQR = async (url) => {
         responseType: "arraybuffer",
       }
     );
-
-    const folderPath = path.join(__dirname, "../../public/assets/url_qrs");
-    try {
-      await fs.access(folderPath);
-    } catch (error) {
-      await fs.mkdir(folderPath);
+    if (response) {
+      const folderPath = path.join(__dirname, "../../public/assets/url_qrs");
+      try {
+        await fs.access(folderPath);
+      } catch (error) {
+        await fs.mkdir(folderPath);
+      }
+      const fileName = `${sanitizedUrl}_qr.png`;
+      const filePath = path.join(folderPath, fileName);
+      await fs.writeFile(filePath, Buffer.from(response.data));
+      // console.log(`QR saved successfully at: ${filePath}`);
+      return fileName;
     }
-    const fileName = `${sanitizedUrl}_qr.png`;
-    const filePath = path.join(folderPath, fileName);
-
-    await fs.writeFile(filePath, Buffer.from(response.data));
-
-    console.log(`QR saved successfully at: ${filePath}`);
-    return fileName;
   } catch (error) {
-    console.error("Error fetching or saving QR:", error.message);
+    // console.error("Error fetching or saving QR:", error.message);
     // Handle errors
     throw error; // Rethrow the error to handle it elsewhere
   }
@@ -72,27 +75,28 @@ function extractDomain(url) {
 
 exports.url_shorten = async (req, res) => {
   const redirectURL = req.body.redirectURL;
-  const ip_address = req.ip_address;
+  const ip_address = req.body.ip_address;
   const user = req.user;
+  // console.log(user);
 
   try {
+    if (!redirectURL) {
+      return res.status(400).json({ error: "URL is required" });
+    }
+    
     const uid = new ShortUniqueId({ length: 8 });
     const shortURL = uid.rnd();
 
     // If RedirectURL already exists.
     let existingURL;
     if (user != null) {
-      existingURL = await urlModel.findOne({ redirectURL, user: user._id });
+      existingURL = await urlModel.findOne({ redirectURL, user: user._id, ip_address: null });
     } else {
       existingURL = await urlModel.findOne({
         redirectURL,
         ip_address,
         user: null,
       });
-    }
-
-    if (!redirectURL) {
-      return res.status(400).json({ error: "URL is required" });
     }
 
     const domain = extractDomain(redirectURL);
@@ -141,9 +145,11 @@ exports.url_shorten = async (req, res) => {
     } else {
       // Create a new URL entry
       let userId = user ? user._id : null;
+      let ipAddress = user ? null : ip_address;
+      console.log(userId,ipAddress);
       const newURL = await urlModel.create({
         user: userId,
-        ip_address,
+        ip_address: ipAddress,
         shortURL,
         redirectURL,
         url_logo,
@@ -167,7 +173,7 @@ exports.url_shorten = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res.status(400).send(error.message || "An error occurred");
   }
 };
@@ -198,20 +204,20 @@ exports.url_redirection = async (req, res) => {
       };
     }
   } catch (error) {
-    console.error("Error during redirection:", error.message);
+    // console.error("Error during redirection:", error.message);
     return res.status(500).send("Internal Server Error");
   }
 };
 
 exports.show_urls = async (req, res) => {
   const user = req.user;
-  const ip_address = req.body.ip_address;
-  // const ip_address = req.ip_address;
+  const ip_address = req.ip_address
   try {
     let userId;
     if (user) {
       userId = user._id;
       const urls = await urlModel.find({ user: userId });
+      // console.log(urls,"user");
       if (urls.length === 0) {
         return {
           success: false,
@@ -225,7 +231,7 @@ exports.show_urls = async (req, res) => {
       }
     } else {
       const urls = await urlModel.find({ ip_address });
-
+      // console.log(urls,"ajkfba");
       if (urls.length === 0) {
         return {
           success: false,
@@ -239,7 +245,7 @@ exports.show_urls = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res.status(500).send("Internal Server Error");
   }
 };

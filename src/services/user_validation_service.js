@@ -1,7 +1,8 @@
 const userModel = require("../models/user_model");
-const urlModel = require("../models/url_model")
+const urlModel = require("../models/url_model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const http = require("http");
 
 exports.user_login = async (req, res) => {
   try {
@@ -13,26 +14,21 @@ exports.user_login = async (req, res) => {
       return res.json({ message: "User not found" });
     }
 
-    const isPasswordValid = bcrypt.compare(password, existingUser.password);
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
 
     if (!isPasswordValid) {
       return res.json({ message: "Invalid password" });
     }
-    
-    const token = jwt.sign(
-      { id: existingUser._id },
-      process.env.SECRET_KEY,
-      );
-      
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: true,
-      });
-      
-      if (!token) {
-      return res.json({ message:" Token generation failed" });
-    }
 
+    const token = jwt.sign({ id: existingUser._id }, process.env.SECRET_KEY);
+    if (!token) {
+      return res.json({ message: " Token generation failed" });
+    }
+    // Set the token to cookies
+    res.cookie("token", token);
     const authKeyInsertion = await userModel.findOneAndUpdate(
       { _id: existingUser._id },
       { auth_key: token },
@@ -42,21 +38,22 @@ exports.user_login = async (req, res) => {
     if (!authKeyInsertion) {
       return res.json({ message: "Token updation failed" });
     }
-    
+
     const ip_address_user = await urlModel.find({ ip_address: ip_address });
     // Update the user field for each matching document
     const updatePromises = ip_address_user.map(async (document) => {
       document.user = existingUser._id;
+      document.ip_address = null;
       return document.save();
     });
-    
+
     // Wait for all updates to complete
     const updatedDocuments = await Promise.all(updatePromises);
 
     if (!updatedDocuments) {
       return res.json({ message: "User updation failed" });
     }
-
+    console.log("loggedin");
     return {
       message: "User logged in successfully",
       success: true,
@@ -105,6 +102,29 @@ exports.user_register = async (req, res) => {
         message: "User creation failed",
         success: false,
         newUser: [],
+      };
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+exports.user_logout = async (req, res) => {
+  let user = req.user;
+  try {
+    const currentUser = await userModel.findOneAndUpdate(
+      { _id: user._id },
+      {auth_key: null }
+    );
+    if (currentUser) {
+      return {
+        success: true,
+        message: "User logged out successfully",
+      };
+    } else {
+      return {
+        success: false,
+        message: "User logout failed",
       };
     }
   } catch (error) {
