@@ -7,22 +7,25 @@ const path = require("path");
 const fetchLogo = async (domain) => {
   try {
     const response = await axios.get(
-      `https://logo.clearbit.com/${domain}?format=png`,
+      `https://icon.horse/icon/${domain}`,
       {
         responseType: "arraybuffer",
       }
     );
 
-    const folderPath = path.join(__dirname, "../../public/assets/url_logos");
-    const fileName = `${domain}_logo.png`;
-    const filePath = path.join(folderPath, fileName);
+    if (response) {
+      const folderPath = path.join(__dirname, "../../public/assets/url_logos");
+      const fileName = `${domain}_logo.png`;
+      const filePath = path.join(folderPath, fileName);
 
-    await fs.writeFile(filePath, Buffer.from(response.data));
+      await fs.writeFile(filePath, Buffer.from(response.data));
+      // console.log(`Logo saved successfully at: ${filePath}`);
+      return fileName;
+    }
 
-    console.log(`Logo saved successfully at: ${filePath}`);
-    return fileName;
+    return "slug_logo.png";
   } catch (error) {
-    console.error("Error fetching or saving logo:", error.message);
+    // console.error("Error fetching or saving logo:", error.message);
     // Handle errors
     throw error; // Rethrow the error to handle it elsewhere
   }
@@ -38,22 +41,21 @@ const fetchQR = async (url) => {
         responseType: "arraybuffer",
       }
     );
-
-    const folderPath = path.join(__dirname, "../../public/assets/url_qrs");
-    try {
-      await fs.access(folderPath);
-    } catch (error) {
-      await fs.mkdir(folderPath);
+    if (response) {
+      const folderPath = path.join(__dirname, "../../public/assets/url_qrs");
+      try {
+        await fs.access(folderPath);
+      } catch (error) {
+        await fs.mkdir(folderPath);
+      }
+      const fileName = `${sanitizedUrl}_qr.png`;
+      const filePath = path.join(folderPath, fileName);
+      await fs.writeFile(filePath, Buffer.from(response.data));
+      // console.log(`QR saved successfully at: ${filePath}`);
+      return fileName;
     }
-    const fileName = `${sanitizedUrl}_qr.png`;
-    const filePath = path.join(folderPath, fileName);
-
-    await fs.writeFile(filePath, Buffer.from(response.data));
-
-    console.log(`QR saved successfully at: ${filePath}`);
-    return fileName;
   } catch (error) {
-    console.error("Error fetching or saving QR:", error.message);
+    // console.error("Error fetching or saving QR:", error.message);
     // Handle errors
     throw error; // Rethrow the error to handle it elsewhere
   }
@@ -167,7 +169,7 @@ exports.url_shorten = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res.status(400).send(error.message || "An error occurred");
   }
 };
@@ -198,7 +200,7 @@ exports.url_redirection = async (req, res) => {
       };
     }
   } catch (error) {
-    console.error("Error during redirection:", error.message);
+    // console.error("Error during redirection:", error.message);
     return res.status(500).send("Internal Server Error");
   }
 };
@@ -225,7 +227,6 @@ exports.show_urls = async (req, res) => {
       }
     } else {
       const urls = await urlModel.find({ ip_address });
-
       if (urls.length === 0) {
         return {
           success: false,
@@ -239,7 +240,7 @@ exports.show_urls = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res.status(500).send("Internal Server Error");
   }
 };
