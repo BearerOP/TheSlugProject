@@ -5,13 +5,11 @@ const userModel = require("../src/models/user_model");
 // Middleware for handling auth
 async function user_auth(req, res, next) {
   // Implement user auth logic
-  const token = req.cookies.token;
+  // const token = req.cookies.token;
   const ip_address = req.body.ip_address;
   try {
-    // const token = req.headers["token"];
-    // console.log(token);
-    // const tokenHead = req.headers['token'];
-    // const token = tokenHead.split(" ")[1];
+    const tokenHead = req.headers['Authorization'];
+    const token = tokenHead.split(" ")[1];
 
     const jwtPassword = process.env.SECRET_KEY;
     const decode = jwt.verify(token, jwtPassword);

@@ -1,5 +1,5 @@
 const userModel = require("../models/user_model");
-const urlModel = require("../models/url_model")
+const urlModel = require("../models/url_model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -8,7 +8,7 @@ exports.user_login = async (req, res) => {
     const { email, password, ip_address } = req.body;
     // Check if the user exists in the database
     const existingUser = await userModel.findOne({ email });
-
+    
     if (!existingUser) {
       return res.json({ message: "User not found" });
     }
@@ -18,19 +18,14 @@ exports.user_login = async (req, res) => {
     if (!isPasswordValid) {
       return res.json({ message: "Invalid password" });
     }
-    
-    const token = jwt.sign(
-      { id: existingUser._id },
-      process.env.SECRET_KEY,
-      );
-      
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: true,
-      });
-      
-      if (!token) {
-      return res.json({ message:" Token generation failed" });
+
+    const token = jwt.sign({ id: existingUser._id }, process.env.SECRET_KEY);
+
+    // Set the Authorization header with the Bearer token
+    res.setHeader("Authorization", `Bearer ${token}`);
+
+    if (!token) {
+      return res.json({ message: " Token generation failed" });
     }
 
     const authKeyInsertion = await userModel.findOneAndUpdate(
@@ -42,14 +37,15 @@ exports.user_login = async (req, res) => {
     if (!authKeyInsertion) {
       return res.json({ message: "Token updation failed" });
     }
-    
+
     const ip_address_user = await urlModel.find({ ip_address: ip_address });
     // Update the user field for each matching document
     const updatePromises = ip_address_user.map(async (document) => {
       document.user = existingUser._id;
+      document.ip_address = null;
       return document.save();
     });
-    
+
     // Wait for all updates to complete
     const updatedDocuments = await Promise.all(updatePromises);
 
