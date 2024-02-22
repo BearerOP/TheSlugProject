@@ -78,6 +78,7 @@ exports.url_shorten = async (req, res) => {
   const user = req.user;
 
   try {
+    
     const uid = new ShortUniqueId({ length: 8 });
     const shortURL = uid.rnd();
 
