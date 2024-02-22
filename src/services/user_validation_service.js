@@ -2,6 +2,7 @@ const userModel = require("../models/user_model");
 const urlModel = require("../models/url_model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const http = require('http');
 
 exports.user_login = async (req, res) => {
   try {
@@ -13,21 +14,19 @@ exports.user_login = async (req, res) => {
       return res.json({ message: "User not found" });
     }
 
-    const isPasswordValid = bcrypt.compare(password, existingUser.password);
+    const isPasswordValid = await bcrypt.compare(password, existingUser.password);
+    
 
     if (!isPasswordValid) {
       return res.json({ message: "Invalid password" });
     }
 
     const token = jwt.sign({ id: existingUser._id }, process.env.SECRET_KEY);
-
-    // Set the Authorization header with the Bearer token
-    res.setHeader("Authorization", `Bearer ${token}`);
-
     if (!token) {
       return res.json({ message: " Token generation failed" });
     }
-
+    // Set the Authorization header with the Bearer token
+    res.setHeader("Authorization", `Bearer ${token}`);
     const authKeyInsertion = await userModel.findOneAndUpdate(
       { _id: existingUser._id },
       { auth_key: token },
@@ -52,7 +51,7 @@ exports.user_login = async (req, res) => {
     if (!updatedDocuments) {
       return res.json({ message: "User updation failed" });
     }
-
+    console.log("loggedin");
     return {
       message: "User logged in successfully",
       success: true,
