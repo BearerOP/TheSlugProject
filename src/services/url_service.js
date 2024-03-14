@@ -80,10 +80,6 @@ exports.url_shorten = async (req, res) => {
   // console.log(user);
 
   try {
-    if (!redirectURL) {
-      return res.status(400).json({ error: "URL is required" });
-    }
-    
     const uid = new ShortUniqueId({ length: 8 });
     const shortURL = uid.rnd();
 
@@ -231,7 +227,7 @@ exports.show_urls = async (req, res) => {
       }
     } else {
       const urls = await urlModel.find({ ip_address });
-      // console.log(urls,"ajkfba");
+
       if (urls.length === 0) {
         return {
           success: false,

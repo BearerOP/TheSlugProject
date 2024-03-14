@@ -2,22 +2,18 @@ const userModel = require("../models/user_model");
 const urlModel = require("../models/url_model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const http = require("http");
 
 exports.user_login = async (req, res) => {
   try {
     const { email, password, ip_address } = req.body;
     // Check if the user exists in the database
     const existingUser = await userModel.findOne({ email });
-
+    
     if (!existingUser) {
       return res.json({ message: "User not found" });
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      existingUser.password
-    );
+    const isPasswordValid = bcrypt.compare(password, existingUser.password);
 
     if (!isPasswordValid) {
       return res.json({ message: "Invalid password" });
@@ -27,8 +23,7 @@ exports.user_login = async (req, res) => {
     if (!token) {
       return res.json({ message: " Token generation failed" });
     }
-    // Set the token to cookies
-    res.cookie("token", token);
+
     const authKeyInsertion = await userModel.findOneAndUpdate(
       { _id: existingUser._id },
       { auth_key: token },
