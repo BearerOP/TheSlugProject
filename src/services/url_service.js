@@ -3,6 +3,7 @@ const ShortUniqueId = require("short-unique-id");
 const axios = require("axios");
 const fs = require("fs").promises; // Using promises version of fs
 const path = require("path");
+const { AsyncLocalStorage } = require("async_hooks");
 
 const fetchLogo = async (domain) => {
   try {
@@ -74,28 +75,24 @@ function extractDomain(url) {
 
 exports.url_shorten = async (req, res) => {
   const redirectURL = req.body.redirectURL;
-  const ip_address = req.ip_address;
+  const ip_address = req.body.ip_address;
   const user = req.user;
+  // console.log(user);
 
   try {
-    
     const uid = new ShortUniqueId({ length: 8 });
     const shortURL = uid.rnd();
 
     // If RedirectURL already exists.
     let existingURL;
     if (user != null) {
-      existingURL = await urlModel.findOne({ redirectURL, user: user._id });
+      existingURL = await urlModel.findOne({ redirectURL, user: user._id, ip_address: null });
     } else {
       existingURL = await urlModel.findOne({
         redirectURL,
         ip_address,
         user: null,
       });
-    }
-
-    if (!redirectURL) {
-      return res.status(400).json({ error: "URL is required" });
     }
 
     const domain = extractDomain(redirectURL);
@@ -144,9 +141,11 @@ exports.url_shorten = async (req, res) => {
     } else {
       // Create a new URL entry
       let userId = user ? user._id : null;
+      let ipAddress = user ? null : ip_address;
+      console.log(userId,ipAddress);
       const newURL = await urlModel.create({
         user: userId,
-        ip_address,
+        ip_address: ipAddress,
         shortURL,
         redirectURL,
         url_logo,
@@ -208,13 +207,13 @@ exports.url_redirection = async (req, res) => {
 
 exports.show_urls = async (req, res) => {
   const user = req.user;
-  const ip_address = req.body.ip_address;
-  // const ip_address = req.ip_address;
+  const ip_address = req.ip_address
   try {
     let userId;
     if (user) {
       userId = user._id;
       const urls = await urlModel.find({ user: userId });
+      // console.log(urls,"user");
       if (urls.length === 0) {
         return {
           success: false,
@@ -228,6 +227,7 @@ exports.show_urls = async (req, res) => {
       }
     } else {
       const urls = await urlModel.find({ ip_address });
+
       if (urls.length === 0) {
         return {
           success: false,

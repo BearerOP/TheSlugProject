@@ -2,7 +2,6 @@ const userModel = require("../models/user_model");
 const urlModel = require("../models/url_model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const http = require('http');
 
 exports.user_login = async (req, res) => {
   try {
@@ -14,8 +13,7 @@ exports.user_login = async (req, res) => {
       return res.json({ message: "User not found" });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, existingUser.password);
-    
+    const isPasswordValid = bcrypt.compare(password, existingUser.password);
 
     if (!isPasswordValid) {
       return res.json({ message: "Invalid password" });
@@ -25,8 +23,7 @@ exports.user_login = async (req, res) => {
     if (!token) {
       return res.json({ message: " Token generation failed" });
     }
-    // Set the Authorization header with the Bearer token
-    res.setHeader("Authorization", `Bearer ${token}`);
+
     const authKeyInsertion = await userModel.findOneAndUpdate(
       { _id: existingUser._id },
       { auth_key: token },
@@ -100,6 +97,29 @@ exports.user_register = async (req, res) => {
         message: "User creation failed",
         success: false,
         newUser: [],
+      };
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+exports.user_logout = async (req, res) => {
+  let user = req.user;
+  try {
+    const currentUser = await userModel.findOneAndUpdate(
+      { _id: user._id },
+      {auth_key: null }
+    );
+    if (currentUser) {
+      return {
+        success: true,
+        message: "User logged out successfully",
+      };
+    } else {
+      return {
+        success: false,
+        message: "User logout failed",
       };
     }
   } catch (error) {
