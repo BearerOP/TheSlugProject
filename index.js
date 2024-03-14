@@ -12,6 +12,7 @@ const app = express();
 
 app.use(express.json());
 app.use(cookiparser());
+
 app.use(
   cors({
     origin: "http://localhost:5173",
