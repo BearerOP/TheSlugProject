@@ -6,6 +6,6 @@ exports.google_login = async(req,res)=>{
     try {
         const { email, access_token, ip_address, name, profile_picture } = req.body;
     } catch (error) {
-        console.log("Error:", error);
+        console.log("Error:", error );
     }
 }
