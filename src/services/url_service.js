@@ -7,12 +7,9 @@ const { AsyncLocalStorage } = require("async_hooks");
 
 const fetchLogo = async (domain) => {
   try {
-    const response = await axios.get(
-      `https://icon.horse/icon/${domain}`,
-      {
-        responseType: "arraybuffer",
-      }
-    );
+    const response = await axios.get(`https://icon.horse/icon/${domain}`, {
+      responseType: "arraybuffer",
+    });
 
     if (response) {
       const folderPath = path.join(__dirname, "../../public/assets/url_logos");
@@ -86,7 +83,11 @@ exports.url_shorten = async (req, res) => {
     // If RedirectURL already exists.
     let existingURL;
     if (user != null) {
-      existingURL = await urlModel.findOne({ redirectURL, user: user._id, ip_address: null });
+      existingURL = await urlModel.findOne({
+        redirectURL,
+        user: user._id,
+        ip_address: null,
+      });
     } else {
       existingURL = await urlModel.findOne({
         redirectURL,
@@ -142,7 +143,7 @@ exports.url_shorten = async (req, res) => {
       // Create a new URL entry
       let userId = user ? user._id : null;
       let ipAddress = user ? null : ip_address;
-      console.log(userId,ipAddress);
+      console.log(userId, ipAddress);
       const newURL = await urlModel.create({
         user: userId,
         ip_address: ipAddress,
@@ -207,38 +208,31 @@ exports.url_redirection = async (req, res) => {
 
 exports.show_urls = async (req, res) => {
   const user = req.user;
-  const ip_address = req.ip_address
+  const ip_address = req.ip_address;
+  console.log(user, ip_address);
   try {
     let userId;
+    let urls;
     if (user) {
       userId = user._id;
-      const urls = await urlModel.find({ user: userId });
-      // console.log(urls,"user");
-      if (urls.length === 0) {
-        return {
-          success: false,
-          message: "No URL entries found",
-        };
-      } else {
-        return {
-          success: true,
-          urls,
-        };
-      }
+      urls = await urlModel.find({ user: userId });
+      console.log(urls, "user");
     } else {
-      const urls = await urlModel.find({ ip_address });
-
-      if (urls.length === 0) {
-        return {
-          success: false,
-          message: "No URL entries found",
-        };
-      } else {
-        return {
-          success: true,
-          urls,
-        };
+      if (ip_address) {
+        urls = await urlModel.find({ ip_address: ip_address });
+        console.log(urls, "urls");
       }
+    }
+    if (urls.length === 0) {
+      return {
+        success: false,
+        message: "No URL entries found",
+      };
+    } else {
+      return {
+        success: true,
+        urls,
+      };
     }
   } catch (error) {
     // console.log(error);
