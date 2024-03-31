@@ -5,11 +5,10 @@ const userModel = require("../src/models/user_model");
 // Middleware for handling auth
 async function user_auth(req, res, next) {
   // Implement user auth logic
-  const ip_address = req.body.ip_address;
+  const ip_address = req.cookies.ip_address;
   const token = req.cookies.token;
   try {
     if (!token) {
-      
       req.ip_address = ip_address;
       next();
     } else {

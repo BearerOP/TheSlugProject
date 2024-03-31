@@ -72,7 +72,7 @@ function extractDomain(url) {
 
 exports.url_shorten = async (req, res) => {
   const redirectURL = req.body.redirectURL;
-  const ip_address = req.body.ip_address;
+  const ip_address = req.cookies.ip_address;
   const user = req.user;
   // console.log(user);
 
@@ -209,18 +209,15 @@ exports.url_redirection = async (req, res) => {
 exports.show_urls = async (req, res) => {
   const user = req.user;
   const ip_address = req.ip_address;
-  console.log(user, ip_address);
   try {
     let userId;
     let urls;
     if (user) {
       userId = user._id;
       urls = await urlModel.find({ user: userId });
-      console.log(urls, "user");
     } else {
       if (ip_address) {
         urls = await urlModel.find({ ip_address: ip_address });
-        console.log(urls, "urls");
       }
     }
     if (urls.length === 0) {
