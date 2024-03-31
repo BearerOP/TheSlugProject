@@ -154,7 +154,7 @@ exports.url_shorten = async (req, res) => {
         visitHistory: [],
       });
 
-      const host = process.env.host;
+      const host = process.env.host ;
       if (newURL) {
         return {
           success: true,
