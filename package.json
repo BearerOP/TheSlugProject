@@ -1,5 +1,5 @@
 {
-  "name": "url_shortener",
+  "name": "the_slug_project",
   "version": "1.0.0",
   "description": "shortens the provided url.",
   "main": "index.js",
