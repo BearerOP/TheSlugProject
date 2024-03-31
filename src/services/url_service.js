@@ -221,7 +221,7 @@ exports.show_urls = async (req, res) => {
         urls = await urlModel.find({ ip_address: ip_address });
       }
     }
-    if (!urls || urls.length === 0) {
+    if (urls.length == 0) {
       return {
         success: false,
         message: "No URL entries found",
