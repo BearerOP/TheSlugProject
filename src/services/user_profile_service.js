@@ -39,7 +39,7 @@ exports.change_password = async (req, res) => {
     } else {
       return {
         success: false,
-        message: "Password changing failed!",
+        message: "Password changing failed !",
       };
     }
   } catch (error) {
