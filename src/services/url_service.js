@@ -124,11 +124,11 @@ exports.url_shorten = async (req, res) => {
 
       // Save the updated document
       const updatedURL = await existingURL.save();
-
+      const host = process.env.host;
       if (updatedURL) {
         return {
           success: true,
-          shortURL: `http://localhost:10000/${shortURL}`,
+          shortURL: `${host}/${shortURL}`,
           url_logo,
           url_qr,
           message: "URL Entry Updated!",
@@ -154,10 +154,11 @@ exports.url_shorten = async (req, res) => {
         visitHistory: [],
       });
 
+      const host = process.env.host;
       if (newURL) {
         return {
           success: true,
-          shortURL: `http://localhost:10000/${shortURL}`,
+          shortURL: `${host}/${shortURL}`,
           url_logo,
           url_qr,
           message: "URL Entry Created!",
