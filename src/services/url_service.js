@@ -221,17 +221,21 @@ exports.show_urls = async (req, res) => {
         urls = await urlModel.find({ ip_address: ip_address });
       }
     }
-    if (urls.length == 0) {
-      return {
-        success: false,
-        message: "No URL entries found",
-      };
-    } else {
-      return {
+    // if (urls.length == 0) {
+    //   return {
+    //     success: false,
+    //     message: "No URL entries found",
+    //   };
+    // } else {
+    //   return {
+    //     success: true,
+    //     urls,
+    //   };
+    // }
+    return {
         success: true,
         urls,
       };
-    }
   } catch (error) {
     console.log(error);
     
