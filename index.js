@@ -15,7 +15,7 @@ app.use(cookiparser());
 
 app.use(
   cors({
-    origin: "*",
+    origin: "https://theslug.netlify.app",
     credentials: true,
   })
 );
