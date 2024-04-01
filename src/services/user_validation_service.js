@@ -28,8 +28,8 @@ exports.user_login = async (req, res) => {
       return res.json({ message: " Token generation failed" });
     }
     // Set the token to cookies
-    // res.cookie('token', token);
-    res.cookie('token', token, { partitioned: true });
+    res.cookie('token', token);
+    // res.cookie('token', token, { partitioned: true });
     
     const authKeyInsertion = await userModel.findOneAndUpdate(
       { _id: existingUser._id },
