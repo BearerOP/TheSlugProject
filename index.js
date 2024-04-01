@@ -13,12 +13,20 @@ const app = express();
 app.use(express.json());
 app.use(cookiparser());
 
-app.use(
-  cors({
-    origin: "https://theslug.netlify.app",
-    Access-Control-Allow-Credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: "https://theslug.netlify.app","http://localhost:10000",
+//     credentials: true,
+//   })
+// );
+
+const corsOptions = {
+  origin: ["https://theslug.netlify.app","http://localhost:10000"], // Allow requests from example1.com and example2.com
+  methods: 'GET,POST', // Allow only GET and POST requests
+  allowedHeaders: 'Content-Type,Authorization', // Allow only specific headers
+};
+
+app.use(cors(corsOptions));
 
 let { connectDB } = require("./db/dbconnection.js");
 
