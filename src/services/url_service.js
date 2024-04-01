@@ -72,7 +72,7 @@ function extractDomain(url) {
 
 exports.url_shorten = async (req, res) => {
   const redirectURL = req.body.redirectURL;
-  const ip_address = req.cookies.ip_address;
+  const ip_address = req.headers['cf-connecting-ip'];
   const user = req.user;
   console.log(user+"url shorten service");
 
@@ -208,7 +208,6 @@ exports.url_redirection = async (req, res) => {
 };
 
 exports.show_urls = async (req, res) => {
-  console.log(req.headers['cf-connecting-ip'],"show_urls")
   const user = req.user;
   const ip_address = req.ip_address;
   console.log(user+"show url service");
