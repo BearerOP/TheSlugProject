@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 exports.user_login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    let ip_address = req.cookies.ip_address;
+  const ip_address = req.headers['cf-connecting-ip'];
     // Check if the user exists in the database
     const existingUser = await userModel.findOne({ email });
 
