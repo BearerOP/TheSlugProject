@@ -73,6 +73,7 @@ exports.user_login = async (req, res) => {
 exports.user_register = async (req, res) => {
   try {
     const { name, email, mobile, gender, password } = req.body;
+    const profile_picture = "default.png";
     // console.log(req.body);
     // Check if the user already exists in the database
     const existingUser = await userModel.findOne({ email } || { mobile });
@@ -91,6 +92,7 @@ exports.user_register = async (req, res) => {
       mobile,
       gender,
       password: hashedPassword,
+      profile_picture,
     });
 
     if (newUser) {
