@@ -23,7 +23,7 @@ app.use(cookiparser());
 const corsOptions = {
   origin: ["https://theslug.netlify.app","http://localhost:5173"], // Allow requests from example1.com and example2.com
   methods: 'GET,POST', // Allow only GET and POST requests
-    credentials: true,
+    credentials: 'include',
   allowedHeaders: 'Content-Type,Authorization', // Allow only specific headers
 };
 
