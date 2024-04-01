@@ -15,13 +15,13 @@ app.use(cookiparser());
 
 // app.use(
 //   cors({
-//     origin: "https://theslug.netlify.app","http://localhost:10000",
+//     origin: "https://theslug.netlify.app","http://localhost:5173",
 //     credentials: true,
 //   })
 // );
 
 const corsOptions = {
-  origin: ["https://theslug.netlify.app","http://localhost:10000"], // Allow requests from example1.com and example2.com
+  origin: ["https://theslug.netlify.app","http://localhost:5173"], // Allow requests from example1.com and example2.com
   methods: 'GET,POST', // Allow only GET and POST requests
   allowedHeaders: 'Content-Type,Authorization', // Allow only specific headers
 };
