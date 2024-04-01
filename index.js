@@ -26,7 +26,8 @@ const corsOptions = {
     credentials: true,
   allowedHeaders: 'Content-Type,Authorization', // Allow only specific headers
 };
-
+// Handle CORS preflight requests
+app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
 
 let { connectDB } = require("./db/dbconnection.js");
