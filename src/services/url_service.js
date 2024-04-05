@@ -72,9 +72,9 @@ function extractDomain(url) {
 
 exports.url_shorten = async (req, res) => {
   const redirectURL = req.body.redirectURL;
-  const ip_address = req.cookies.ip_address;
+  const ip_address = req.headers['cf-connecting-ip'];
   const user = req.user;
-  // console.log(user);
+  console.log(user+"url shorten service");
 
   try {
     const uid = new ShortUniqueId({ length: 8 });
@@ -210,6 +210,8 @@ exports.url_redirection = async (req, res) => {
 exports.show_urls = async (req, res) => {
   const user = req.user;
   const ip_address = req.ip_address;
+  console.log(user+"show url service");
+  console.log(ip_address+"show url service");
   try {
     let userId;
     let urls;
@@ -221,19 +223,24 @@ exports.show_urls = async (req, res) => {
         urls = await urlModel.find({ ip_address: ip_address });
       }
     }
-    if (urls.length === 0) {
-      return {
-        success: false,
-        message: "No URL entries found",
-      };
-    } else {
-      return {
+    // if (urls.length == 0) {
+    //   return {
+    //     success: false,
+    //     message: "No URL entries found",
+    //   };
+    // } else {
+    //   return {
+    //     success: true,
+    //     urls,
+    //   };
+    // }
+    return {
         success: true,
         urls,
       };
-    }
   } catch (error) {
-    // console.log(error);
+    console.log(error);
+    
     return res.status(500).send("Internal Server Error");
   }
 };

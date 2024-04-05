@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 exports.user_login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    let ip_address = req.cookies.ip_address;
+  const ip_address = req.headers['cf-connecting-ip'];
     // Check if the user exists in the database
     const existingUser = await userModel.findOne({ email });
 
@@ -29,6 +29,8 @@ exports.user_login = async (req, res) => {
     }
     // Set the token to cookies
     res.cookie('token', token);
+    // res.cookie('token', token, { partitioned: true });
+    
     const authKeyInsertion = await userModel.findOneAndUpdate(
       { _id: existingUser._id },
       { auth_key: token },
@@ -71,6 +73,7 @@ exports.user_login = async (req, res) => {
 exports.user_register = async (req, res) => {
   try {
     const { name, email, mobile, gender, password } = req.body;
+    const profile_picture = "default.png";
     // console.log(req.body);
     // Check if the user already exists in the database
     const existingUser = await userModel.findOne({ email } || { mobile });
@@ -89,6 +92,7 @@ exports.user_register = async (req, res) => {
       mobile,
       gender,
       password: hashedPassword,
+      profile_picture,
     });
 
     if (newUser) {
