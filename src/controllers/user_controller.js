@@ -1,7 +1,8 @@
 const {
   user_login,
   user_register,
-  user_logout
+  user_logout,
+  email_verify
 } = require("../services/user_validation_service.js");
 
 const {
@@ -52,6 +53,20 @@ exports.user_logout = async (req, res) => {
     const data = await user_logout(req, res);
     if (data.success) {
       res.status(200).json(data);
+    }
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};
+
+exports.email_verify = async (req, res) => {
+  try {
+    const data = await email_verify(req, res);
+    if (data.success) {
+      res.status(200).json(data);
+    }
+    else{
+        res.status(403).json(data);
     }
   } catch (error) {
     console.log("Error:", error);
