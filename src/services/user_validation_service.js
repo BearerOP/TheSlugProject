@@ -2,11 +2,13 @@ const userModel = require("../models/user_model");
 const urlModel = require("../models/url_model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+const otpGenerator = require("otp-generator");
 
 exports.user_login = async (req, res) => {
   try {
     const { email, password } = req.body;
-  const ip_address = req.headers['cf-connecting-ip'];
+    const ip_address = req.headers["cf-connecting-ip"];
     // Check if the user exists in the database
     const existingUser = await userModel.findOne({ email });
 
@@ -28,9 +30,9 @@ exports.user_login = async (req, res) => {
       return res.json({ message: " Token generation failed" });
     }
     // Set the token to cookies
-    res.cookie('token', token);
+    res.cookie("token", token);
     // res.cookie('token', token, { partitioned: true });
-    
+
     const authKeyInsertion = await userModel.findOneAndUpdate(
       { _id: existingUser._id },
       { auth_key: token },
@@ -118,9 +120,9 @@ exports.user_logout = async (req, res) => {
   try {
     const currentUser = await userModel.findOneAndUpdate(
       { _id: user._id },
-      {auth_key: null }
+      { auth_key: null }
     );
-    res.clearCookie('token');
+    res.clearCookie("token");
     if (currentUser) {
       return {
         success: true,
@@ -134,5 +136,63 @@ exports.user_logout = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+  }
+};
+
+exports.email_verify = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    let otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+      lowerCaseAlphabets: false,
+    });
+    console.log(otp);
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      auth: {
+        user: `${process.env.Slug_Project_Gmail_User}`,
+        pass: `${process.env.Slug_Project_Gmail_Pass}`,
+      },
+    });
+    // async..await is not allowed in global scope, must use a wrapper
+    async function main() {
+      // send mail with defined transport object
+      const info = await transporter.sendMail({
+        from: `"The Slug Project Team" <${process.env.Slug_Project_Gmail_User}>`,
+        to: `${email}`,
+        subject: "OTP for email verification",
+        text: "",
+        html: `<body style="font-family: Arial, sans-serif;"><div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #333;">Your One-Time Password (OTP)</h2>
+            <p style="font-size: 16px;">Dear User,</p>
+            <p style="font-size: 16px;">You have requested a One-Time Password (OTP) verify your email. Please use the following OTP:</p>
+            <div style="padding: 10px 20px; background-color: #f5f5f5; border-radius: 5px; font-size: 18px; margin-bottom: 20px;">
+                <strong>OTP:</strong> <span style="font-weight: bold; color: #333;"> ${otp}</span>
+            </div>
+            <p style="font-size: 16px;">This OTP is valid for a single use and should not be shared with anyone.</p>
+            <p style="font-size: 16px;">If you did not request this OTP, please disregard this email.</p>
+            <p style="font-size: 16px;">Best regards,<br>The Slug Project Team.</p>
+        </div></body>`,
+      });
+
+      console.log("Message sent: %s", info.messageId);
+    }
+
+    main().catch(console.error);
+
+    return {
+      success: true,
+      message: "OTP sent successfully",
+      otp,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      message: "OTP sending failed",
+    };
   }
 };
