@@ -30,11 +30,11 @@ exports.user_login = async (req, res) => {
       return res.json({ message: " Token generation failed" });
     }
     // Set the token to cookies
-    res.cookie("token", token, { 
-      sameSite: 'none',
-      secure: true
-  });
-  
+    res.cookie("token", token, {
+      sameSite: "none",
+      secure: true,
+    });
+
     // res.cookie('token', token, { partitioned: true });
 
     const authKeyInsertion = await userModel.findOneAndUpdate(
@@ -79,7 +79,8 @@ exports.user_login = async (req, res) => {
 exports.user_register = async (req, res) => {
   try {
     const { name, email, mobile, gender, password } = req.body;
-    const profile_picture = "https://firebasestorage.googleapis.com/v0/b/theslugproject-bca3f.appspot.com/o/Frontend%2F7309681.jpg?alt=media&token=063a4cbc-dbfb-408f-9802-fc3aab1b9e8e";
+    const profile_picture =
+      "https://firebasestorage.googleapis.com/v0/b/theslugproject-bca3f.appspot.com/o/Frontend%2F7309681.jpg?alt=media&token=063a4cbc-dbfb-408f-9802-fc3aab1b9e8e";
     // console.log(req.body);
     // Check if the user already exists in the database
     const existingUser = await userModel.findOne({ email } || { mobile });
@@ -156,6 +157,7 @@ exports.email_verify = async (req, res) => {
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 587,
+      secure: false,
       auth: {
         user: `${process.env.Slug_Project_Gmail_User}`,
         pass: `${process.env.Slug_Project_Gmail_Pass}`,
