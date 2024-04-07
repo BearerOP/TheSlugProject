@@ -186,7 +186,7 @@ exports.email_verify = async (req, res) => {
       console.log("Message sent: %s", info.messageId);
     }
 
-    main().catch(console.error);
+    // main().catch(console.error);
 
     return {
       success: true,
