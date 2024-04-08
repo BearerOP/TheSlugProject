@@ -6,13 +6,17 @@ const userModel = require("../src/models/user_model");
 async function user_auth(req, res, next) {
   // Implement user auth logic
   const ip_address = req.headers['cf-connecting-ip'];
-  const token = req.cookies.token;
+  const token = req.cookies.token || req.headers.authorization;
   
   try {
     if (!token) {
       req.ip_address = ip_address;
       next();
     } else {
+      if (token.startsWith('Bearer ')) {
+        // Split the token from 'Bearer ' string
+        token = token.split(' ')[1];
+      }
       const jwtPassword = process.env.SECRET_KEY;
       const decode = jwt.verify(token, jwtPassword);
       // console.log(decode.id);
