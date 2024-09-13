@@ -13,7 +13,7 @@ exports.user_login = async (req, res) => {
     const existingUser = await userModel.findOne({ email });
 
     if (!existingUser) {
-      return res.json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -22,12 +22,12 @@ exports.user_login = async (req, res) => {
     );
 
     if (!isPasswordValid) {
-      return res.json({ message: "Invalid password" });
+      return res.status(401).json({ message: "Invalid password" });
     }
 
     const token = jwt.sign({ id: existingUser._id }, process.env.SECRET_KEY);
     if (!token) {
-      return res.json({ message: " Token generation failed" });
+      return res.status(403).json({ message:" Token generation failed" })
     }
     // Set the token to cookies
     res.cookie("token", token, {
@@ -44,7 +44,7 @@ exports.user_login = async (req, res) => {
     );
 
     if (!authKeyInsertion) {
-      return res.json({ message: "Token updation failed" });
+      return res.status(403).json({ message:" Token updation failed" })
     }
 
     const ip_address_user = await urlModel.find({ ip_address: ip_address });
@@ -59,7 +59,7 @@ exports.user_login = async (req, res) => {
     const updatedDocuments = await Promise.all(updatePromises);
 
     if (!updatedDocuments) {
-      return res.json({ message: "User updation failed" });
+      return res.status(401).json({ message: "User updation failed" });
     }
     console.log("loggedin");
     return {
@@ -85,7 +85,7 @@ exports.user_register = async (req, res) => {
     // Check if the user already exists in the database
     const existingUser = await userModel.findOne({ email } || { mobile });
     if (existingUser) {
-      return res.json({
+      return res.status(409).json({
         message: "User already exists",
         success: false,
       });
