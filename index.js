@@ -5,20 +5,12 @@ let path = require("path");
 const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger_output.json");
-var cookieParser = require('cookie-parser')
 
 dotenv.config();
 const app = express();
 
 app.use(express.json());
 app.use(cookiparser());
-
-// app.use(
-//   cors({
-//     origin: "https://theslug.netlify.app","http://localhost:5173",
-//     credentials: true,
-//   })
-// );
 
 const corsOptions = {
   origin: ["https://theslug.netlify.app","http://localhost:5173"], // Allow requests from example1.com and example2.com
