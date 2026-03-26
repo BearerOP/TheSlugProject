@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(cookiparser());
 
 const corsOptions = {
-  origin: ["https://theslug.netlify.app","http://localhost:5173"], // Allow requests from example1.com and example2.com
+  origin: ["https://zurl.netlify.app","http://localhost:5173","https://zurl.parminder.pro"], // Allow requests from example1.com and example2.com
   methods: 'GET,POST', // Allow only GET and POST requests
     credentials: true,
   allowedHeaders: 'Content-Type,Authorization', // Allow only specific headers

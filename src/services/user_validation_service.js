@@ -83,7 +83,7 @@ exports.user_register = async (req, res) => {
       "https://firebasestorage.googleapis.com/v0/b/theslugproject-bca3f.appspot.com/o/Frontend%2F7309681.jpg?alt=media&token=063a4cbc-dbfb-408f-9802-fc3aab1b9e8e";
     // console.log(req.body);
     // Check if the user already exists in the database
-    const existingUser = await userModel.findOne({ email } || { mobile });
+    const existingUser = await userModel.findOne({ email });
     if (existingUser) {
       return res.status(409).json({
         message: "User already exists",
@@ -96,7 +96,6 @@ exports.user_register = async (req, res) => {
     const newUser = await userModel.create({
       name,
       email,
-      mobile,
       gender,
       password: hashedPassword,
       profile_picture,
@@ -158,15 +157,15 @@ exports.email_verify = async (req, res) => {
       host: "smtp.gmail.com",
       port: 587, secure: false,
       auth: {
-        user: `${process.env.Slug_Project_Gmail_User}`,
-        pass: `${process.env.Slug_Project_Gmail_Pass}`,
+        user: `${process.env.Zurl_Gmail_User}`,
+        pass: `${process.env.Zurl_Gmail_Pass}`,
       },
     });
     // async..await is not allowed in global scope, must use a wrapper
     async function main() {
       // send mail with defined transport object
       const info = await transporter.sendMail({
-        from: `"The Slug Project Team" <${process.env.Slug_Project_Gmail_User}>`,
+        from: `"Zurl Team" <${process.env.Zurl_Gmail_User}>`,
         to: `${email}`,
         subject: "OTP for email verification",
         text: "",
@@ -179,7 +178,7 @@ exports.email_verify = async (req, res) => {
             </div>
             <p style="font-size: 16px;">This OTP is valid for a single use and should not be shared with anyone.</p>
             <p style="font-size: 16px;">If you did not request this OTP, please disregard this email.</p>
-            <p style="font-size: 16px;">Best regards,<br>The Slug Project Team.</p>
+            <p style="font-size: 16px;">Best regards,<br>Zurl Team.</p>
         </div></body>`,
       });
 

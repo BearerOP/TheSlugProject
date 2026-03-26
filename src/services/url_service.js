@@ -21,7 +21,7 @@ const fetchLogo = async (domain) => {
       return fileName;
     }
 
-    return "slug_logo.png";
+    return "zurl_logo.png";
   } catch (error) {
     // console.error("Error fetching or saving logo:", error.message);
     // Handle errors
