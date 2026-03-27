@@ -78,9 +78,8 @@ exports.user_login = async (req, res) => {
 
 exports.user_register = async (req, res) => {
   try {
-    const { name, email, mobile, gender, password } = req.body;
-    const profile_picture =
-      "https://firebasestorage.googleapis.com/v0/b/theslugproject-bca3f.appspot.com/o/Frontend%2F7309681.jpg?alt=media&token=063a4cbc-dbfb-408f-9802-fc3aab1b9e8e";
+    const { name, email,country, gender, password } = req.body;
+    const profile_picture ="https://res.cloudinary.com/dvo4tvvgb/image/upload/v1737770516/Profile/image.jpg";
     // console.log(req.body);
     // Check if the user already exists in the database
     const existingUser = await userModel.findOne({ email });
@@ -97,6 +96,7 @@ exports.user_register = async (req, res) => {
       name,
       email,
       gender,
+      country_name: country,
       password: hashedPassword,
       profile_picture,
     });
